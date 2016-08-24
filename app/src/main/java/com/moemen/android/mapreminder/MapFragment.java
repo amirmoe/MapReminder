@@ -1,6 +1,7 @@
 
 package com.moemen.android.mapreminder;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -224,6 +226,16 @@ public class MapFragment extends Fragment implements GoogleApiClient.ConnectionC
                         // TODO Auto-generated method stub
                     }
                 });
+
+                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
+                mBuilder.setSmallIcon(R.drawable.notification_icon);
+                mBuilder.setContentTitle("Notification Alert, Click Me!");
+                mBuilder.setContentText("Hi, This is Android Notification Detail!");
+
+                NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+
+                mNotificationManager.notify(0, mBuilder.build());
+
 
 
 
