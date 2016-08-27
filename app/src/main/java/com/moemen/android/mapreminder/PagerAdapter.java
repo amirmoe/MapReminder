@@ -4,6 +4,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
+import java.util.ArrayList;
+
 
 /**
  * Adapter to populate pages inside our ViewPager
@@ -42,20 +44,20 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
         switch (position) {
             case 0:
                 MapFragment tab1 = this.mMapFragment  ;
-                /*tab1.setCommunicator(new Communicator() {
+                tab1.setCommunicator(new Communicator() {
                     /**
                      * Callback used for fragment dicesFragment to communicate with
                      * fragment scoreFragment. Keeps updating the score
-                     * @param data update of the score in the score table.
-                     */ /*
+                     * @param list update of the score in the score table.
+                     */
                     @Override
-                    public void respond(String[] data) {
-                        ScoreFragment frag = (ScoreFragment) getItem(1);
-                        frag.changeData(data);
+                    public void arrayToList(ArrayList list) {
+                        ListFragment frag = (ListFragment) getItem(1);
+                        frag.sendArray(list);
                     }
                     @Override
-                    public void needRestart() {}
-                }); */
+                    public void arrayToMap(ArrayList list) {}
+                });
                 /**
                  * Callback used for fragment DiceFragment to change view to ScoreFragment
                  */

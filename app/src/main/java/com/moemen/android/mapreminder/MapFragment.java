@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.nfc.Tag;
@@ -37,7 +39,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by amir on 2016-08-21.
@@ -47,6 +52,7 @@ public class MapFragment extends Fragment {
     private static final String TAG = "FELSÖKNING";
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
 
+    private Communicator comm;
     private MapView mMapView;
     private Marker marker;
     private GoogleMap googleMap;
@@ -56,42 +62,15 @@ public class MapFragment extends Fragment {
     private ArrayList<MarkerObj> markerList = new ArrayList<>();
 
 
-/*
-    private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+    /**
+     * This method is called upon in the pagerAdapter to make it able for the fragments to communicate
+     * with each other
+     *
+     * @param communicator Initialize the communicator
+     */
+    public void setCommunicator(Communicator communicator) {
+        this.comm = communicator;
     }
-
-    private void showAlert() {
-        if (!isLocationEnabled()) {
-            final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-            dialog.setTitle("Enable Location")
-                    .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
-                            "use this app")
-                    .setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                            startActivity(myIntent);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                        }
-                    });
-            dialog.show();
-        }
-    }
-*/
-        /*private void CheckOldMarker(LatLng point){
-        for (int i=0; i<markerList.size();i++){
-            Toast.makeText(getActivity(),point.latitude+" : "+point.longitude, Toast.LENGTH_SHORT).show();
-            if (point.latitude == marker.getPosition().latitude && point.longitude == marker.getPosition().latitude){
-                markerList.remove(marker);
-                marker.remove();
-            }
-        }
-    }*/
 
 
     /**
@@ -117,6 +96,7 @@ public class MapFragment extends Fragment {
                     NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
                     mBuilder.setSmallIcon(R.drawable.notification_icon);
                     mBuilder.setContentTitle("MapReminder!");
+                    mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
                     NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
                     for (int i=0; i<markerList.size(); i++){
@@ -174,18 +154,6 @@ public class MapFragment extends Fragment {
 
                 // For showing a move to my location button
                 googleMap.setMyLocationEnabled(true);
-                /*double lat =  latitudeGPS;
-                double lng = longitudeGPS;
-                LatLng zoomCoordinate = new LatLng(lat, lng);*/
-
-
-                // For dropping a marker at a point on the Map
-                /*LatLng sydney = new LatLng(-34, 151);
-                googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));*/
-
-                // For zooming automatically to the location of the marker
-             /*   CameraPosition cameraPosition = new CameraPosition.Builder().target(zoomCoordinate).zoom(12).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));*/
 
                 // Set a listener for marker click.
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -194,12 +162,31 @@ public class MapFragment extends Fragment {
                     public void onMapClick(LatLng point) {
                         MarkerOptions options = new MarkerOptions()
                                 .position(new LatLng(point.latitude, point.longitude))
-                                .title("New Marker");
+                                .title("Unidentified location");
                         marker = googleMap.addMarker(options);
+
+                        Geocoder geocoder;
+                        List<Address> addresses = null;
+                        geocoder = new Geocoder(getActivity(), Locale.getDefault());
+
+                        try {
+                            addresses = geocoder.getFromLocation(point.latitude, point.longitude, 1); // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+                        } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+
+
+                        if (address != null){
+                            marker.setTitle(address);
+                        }
+
                         MarkerObj tempMarker = new MarkerObj();
                         tempMarker.setMarker(marker);
                         tempMarker.setMarkerMessage(marker.getTitle());
                         markerList.add(tempMarker);
+
+                        comm.arrayToList(markerList);
 
 
 
