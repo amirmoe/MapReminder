@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
@@ -41,49 +42,55 @@ import java.util.ArrayList;
 /**
  * Created by amir on 2016-08-21.
  */
-public class MapFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks{
+public class MapFragment extends Fragment {
 
     private static final String TAG = "FELSÖKNING";
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
 
-    MapView mMapView;
-    Marker marker;
+    private MapView mMapView;
+    private Marker marker;
     private GoogleMap googleMap;
-    private GoogleApiClient mGoogleApiClient;
-    private ArrayList<Marker> mMarkerArray = new ArrayList<Marker>();
     private TabSelector mTabSelector;
-    LocationManager locationManager;
+    private LocationManager locationManager;
     double longitudeGPS, latitudeGPS;
+    private ArrayList<MarkerObj> markerList = new ArrayList<>();
 
-    /*private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }*/
 
-    private void showAlert() {
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-        dialog.setTitle("Enable Location")
-                .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
-                        "use this app")
-                .setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                        Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(myIntent);
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                    }
-                });
-        dialog.show();
+/*
+    private boolean isLocationEnabled() {
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    /*private boolean checkLocation() {
-        if(!isLocationEnabled())
-            showAlert();
-        return isLocationEnabled();
+    private void showAlert() {
+        if (!isLocationEnabled()) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+            dialog.setTitle("Enable Location")
+                    .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
+                            "use this app")
+                    .setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                            Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                            startActivity(myIntent);
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                        }
+                    });
+            dialog.show();
+        }
+    }
+*/
+        /*private void CheckOldMarker(LatLng point){
+        for (int i=0; i<markerList.size();i++){
+            Toast.makeText(getActivity(),point.latitude+" : "+point.longitude, Toast.LENGTH_SHORT).show();
+            if (point.latitude == marker.getPosition().latitude && point.longitude == marker.getPosition().latitude){
+                markerList.remove(marker);
+                marker.remove();
+            }
+        }
     }*/
 
 
@@ -96,42 +103,48 @@ public class MapFragment extends Fragment implements GoogleApiClient.ConnectionC
         mTabSelector = tabSelector;
     }
 
-    private void CheckOldMarker(LatLng point){
-        for (int i=0; i<mMarkerArray.size();i++){
-            Toast.makeText(getActivity(),point.latitude+" : "+point.longitude, Toast.LENGTH_SHORT).show();
-            if (point.latitude == marker.getPosition().latitude && point.longitude == marker.getPosition().latitude){
-                mMarkerArray.remove(marker);
-                marker.remove();
-            }
-        }
-    }
-
     private final LocationListener locationListenerGPS = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
+            // TODO Auto-generated method stub
             longitudeGPS =  location.getLongitude();
             latitudeGPS = location.getLatitude();
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(getActivity(),latitudeGPS+" : "+longitudeGPS, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getActivity(),latitudeGPS+" : "+longitudeGPS, Toast.LENGTH_SHORT).show();
+
+                    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
+                    mBuilder.setSmallIcon(R.drawable.notification_icon);
+                    mBuilder.setContentTitle("MapReminder!");
+                    NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+
+                    for (int i=0; i<markerList.size(); i++){
+                        double latitudeMark = markerList.get(i).getMarker().getPosition().latitude;
+                        double longitudeMark = markerList.get(i).getMarker().getPosition().longitude;
+                        if (latitudeMark-latitudeGPS <= 0.002 && latitudeMark-latitudeGPS >= -0.02){
+                            if(longitudeMark-longitudeGPS <= 0.002 && longitudeMark-longitudeGPS >= -0.002){
+                                mBuilder.setContentText(markerList.get(i).getMarkerMessage());
+                                mNotificationManager.notify(0, mBuilder.build());
+                            }
+                        }
+                    }
                 }
             });
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle){
 
         }
-
         @Override
-        public void onProviderEnabled(String s){
-
+        public void onProviderDisabled(String provider) {
+            // TODO Auto-generated method stub
         }
-
         @Override
-        public void onProviderDisabled(String s){
-
+        public void onProviderEnabled(String provider) {
+            // TODO Auto-generated method stub
+        }
+        @Override
+        public void onStatusChanged(String provider, int status,
+                                    Bundle extras) {
+            // TODO Auto-generated method stub
         }
     };
 
@@ -140,9 +153,7 @@ public class MapFragment extends Fragment implements GoogleApiClient.ConnectionC
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-
         View v = inflater.inflate(R.layout.fragment_map, parent, false);
-
         mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
 
@@ -159,118 +170,50 @@ public class MapFragment extends Fragment implements GoogleApiClient.ConnectionC
             public void onMapReady(GoogleMap mMap) {
                 googleMap = mMap;
 
-                /*if(!checkLocation()){
-                    System.out.println("vafan");
-                }*/
-
                 //showAlert();
 
                 // For showing a move to my location button
                 googleMap.setMyLocationEnabled(true);
+                /*double lat =  latitudeGPS;
+                double lng = longitudeGPS;
+                LatLng zoomCoordinate = new LatLng(lat, lng);*/
 
 
                 // For dropping a marker at a point on the Map
-                LatLng sydney = new LatLng(-34, 151);
-                googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));
+                /*LatLng sydney = new LatLng(-34, 151);
+                googleMap.addMarker(new MarkerOptions().position(sydney).title("Marker Title").snippet("Marker Description"));*/
 
                 // For zooming automatically to the location of the marker
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(sydney).zoom(12).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-
+             /*   CameraPosition cameraPosition = new CameraPosition.Builder().target(zoomCoordinate).zoom(12).build();
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));*/
 
                 // Set a listener for marker click.
-
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
                     @Override
                     public void onMapClick(LatLng point) {
-                        CheckOldMarker(point);
-
                         MarkerOptions options = new MarkerOptions()
                                 .position(new LatLng(point.latitude, point.longitude))
                                 .title("New Marker");
                         marker = googleMap.addMarker(options);
-                        System.out.println(point.latitude + "---" + point.longitude);
-                        mMarkerArray.add(marker);
+                        MarkerObj tempMarker = new MarkerObj();
+                        tempMarker.setMarker(marker);
+                        tempMarker.setMarkerMessage(marker.getTitle());
+                        markerList.add(tempMarker);
 
 
 
-
+                        if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+                            ActivityCompat.requestPermissions( getActivity(), new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
+                                    MY_PERMISSION_ACCESS_COARSE_LOCATION );
+                        }
+                        locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
+                        locationManager.requestLocationUpdates(
+                                LocationManager.GPS_PROVIDER, 1000, 0, locationListenerGPS); // 2*60*1000, 10
                     }
                 });
-
-                if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
-
-                    ActivityCompat.requestPermissions( getActivity(), new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
-                            MY_PERMISSION_ACCESS_COARSE_LOCATION );
-                }
-
-                locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, new LocationListener() {
-                    @Override
-                    public void onLocationChanged(Location location) {
-                        // TODO Auto-generated method stub
-                    }
-                    @Override
-                    public void onProviderDisabled(String provider) {
-                        // TODO Auto-generated method stub
-                    }
-                    @Override
-                    public void onProviderEnabled(String provider) {
-                        // TODO Auto-generated method stub
-                    }
-                    @Override
-                    public void onStatusChanged(String provider, int status,
-                                                Bundle extras) {
-                        // TODO Auto-generated method stub
-                    }
-                });
-
-                NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
-                mBuilder.setSmallIcon(R.drawable.notification_icon);
-                mBuilder.setContentTitle("Notification Alert, Click Me!");
-                mBuilder.setContentText("Hi, This is Android Notification Detail!");
-
-                NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
-
-                mNotificationManager.notify(0, mBuilder.build());
-
-
-
-
             }
-
-
-
         });
-
         return v;
     }
-
-    @Override
-    public void onConnected(Bundle bundle){
-        Toast.makeText(getActivity(),"connected", Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "tja");
-
-        LocationRequest request = LocationRequest.create();
-        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        request.setInterval(5000);
-        request.setFastestInterval(1000);
-        /*//locationManager.requestLocationUpdates(request,getActivity());
-        locationManager.requestLocationUpdates(request,getActivity());
-
-        if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
-
-            ActivityCompat.requestPermissions( this, new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
-                    LocationService.MY_PERMISSION_ACCESS_COARSE_LOCATION );
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,5000,1000,locationListenerGPS);*/
-    }
-
-    @Override
-    public void onConnectionSuspended(int i){
-    }
-
-
 }
