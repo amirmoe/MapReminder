@@ -72,7 +72,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                markerList.get(position).getMarker().remove();
+                //markerList.get(position).getMarker().remove();
                 mRemoveMarkerPosition.onClick(position, markerList);
             }
         });

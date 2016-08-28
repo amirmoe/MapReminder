@@ -63,13 +63,14 @@ public class ListFragment extends Fragment {
             @Override
             public void onClick(int pos, ArrayList list) {
                 comm.positionToRemove(pos);
-                
-                list.remove(pos);
+                Log.d(TAG, "ListFragment: -" + Integer.toString(list.size()));
+
+
+                Log.d(TAG, "Pos jag ska tabort" + Integer.toString(pos));
+                //list.remove(pos);
                 mRecyclerView.removeViewAt(pos);
                 mAdapter.notifyItemRemoved(pos);
                 mAdapter.notifyItemRangeChanged(pos, list.size());
-
-
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -81,12 +82,8 @@ public class ListFragment extends Fragment {
     public void sendArray(ArrayList list){
         mAdapter.set(list);
         mAdapter.notifyDataSetChanged();
-        /*new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.notifyDataSetChanged();
-            }
-        });*/
+        Log.d(TAG, "ListFragment: +" + Integer.toString(list.size()));
+
 
 
     }

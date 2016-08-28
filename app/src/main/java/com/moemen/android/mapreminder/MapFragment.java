@@ -2,9 +2,12 @@
 package com.moemen.android.mapreminder;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -51,13 +54,18 @@ public class MapFragment extends Fragment {
 
     private static final String TAG = "FELSÖKNING";
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
+    public static final String KEY_NEXT = "com.moemen.android.mapreminder";
 
+
+    private BroadcastReceiver receiver;
     private Communicator comm;
     private MapView mMapView;
     private Marker marker;
     private GoogleMap googleMap;
     private LocationManager locationManager;
+    private NotificationManager mNotificationManager;
     double longitudeGPS, latitudeGPS;
+    private int notificationPosition;
     private ArrayList<MarkerObj> markerList = new ArrayList<>();
 
 
@@ -73,6 +81,16 @@ public class MapFragment extends Fragment {
 
     public void removeMarker(int pos){
         markerList.get(pos).getMarker().remove();
+        markerList.remove(pos);
+        Log.d(TAG, "MapFragment: -" + Integer.toString(markerList.size()));
+    }
+
+    public void notificationStop(){
+        mNotificationManager.cancel(0);
+        removeMarker(notificationPosition);
+        comm.arrayToList(markerList);
+
+
     }
 
     private final LocationListener locationListenerGPS = new LocationListener() {
@@ -84,13 +102,16 @@ public class MapFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    //Toast.makeText(getActivity(),latitudeGPS+" : "+longitudeGPS, Toast.LENGTH_SHORT).show();
+
+                    Intent nextIntent = new Intent(KEY_NEXT);
+                    PendingIntent actionPendingIntent = PendingIntent.getBroadcast(getActivity(), 0, nextIntent, 0);
 
                     NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
                     mBuilder.setSmallIcon(R.drawable.notification_icon);
                     mBuilder.setContentTitle("MapReminder!");
-                    mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
-                    NotificationManager mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+                    //mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
+                    mBuilder.addAction(R.drawable.ic_close, "Turn off", actionPendingIntent);
+                    mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
                     for (int i=0; i<markerList.size(); i++){
                         double latitudeMark = markerList.get(i).getMarker().getPosition().latitude;
@@ -99,6 +120,7 @@ public class MapFragment extends Fragment {
                             if(longitudeMark-longitudeGPS <= 0.002 && longitudeMark-longitudeGPS >= -0.002){
                                 mBuilder.setContentText(markerList.get(i).getMarkerMessage());
                                 mNotificationManager.notify(0, mBuilder.build());
+                                notificationPosition = i;
                             }
                         }
                     }
@@ -137,6 +159,25 @@ public class MapFragment extends Fragment {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(KEY_NEXT);
+
+        receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(KEY_NEXT)) {
+                    notificationStop();
+                }
+            }
+        };
+        getActivity().registerReceiver(receiver, filter);
+
+
+
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -185,6 +226,7 @@ public class MapFragment extends Fragment {
                         tempMarker.setMarkerMessage(marker.getTitle());
                         markerList.add(tempMarker);
 
+                        Log.d(TAG, "MapFragment: +" + Integer.toString(markerList.size()));
                         comm.arrayToList(markerList);
 
 
@@ -202,4 +244,5 @@ public class MapFragment extends Fragment {
         });
         return v;
     }
+
 }
