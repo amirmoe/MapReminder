@@ -7,5 +7,5 @@ import java.util.ArrayList;
  */
 public interface Communicator {
     void arrayToList(ArrayList list);
-    void arrayToMap(ArrayList list);
+    void positionToRemove(int i);
 }

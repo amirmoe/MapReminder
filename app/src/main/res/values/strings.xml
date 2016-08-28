@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Map Reminder</string>
+    <string name="remove_button">Remove</string>
 </resources>

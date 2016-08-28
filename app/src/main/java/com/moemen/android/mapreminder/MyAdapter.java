@@ -1,10 +1,10 @@
 package com.moemen.android.mapreminder;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -14,10 +14,15 @@ import java.util.ArrayList;
  */
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     private ArrayList<MarkerObj> markerList;
+    private RemoveMarkerPosition mRemoveMarkerPosition;
     private static final String TAG = "FELSÖKNING";
 
     public void set(ArrayList list){
         markerList = list;
+    }
+
+    public void setRemoveMarkerPosition(RemoveMarkerPosition removeMarkerPosition) {
+        mRemoveMarkerPosition = removeMarkerPosition;
     }
 
     // Provide a reference to the views for each data item
@@ -27,9 +32,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         // each data item is just a string in this case
         public TextView mTextView;
         public View mView;
+        public Button mButton;
         public ViewHolder(View v) {
             super(v);
             mTextView = (TextView) v.findViewById(R.id.marker_name);
+            mButton = (Button) v.findViewById(R.id.remove_button);
             mView = v;
         }
     }
@@ -55,12 +62,20 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
 
 
         holder.mTextView.setText(markerList.get(position).getMarkerMessage());
+
+        holder.mButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                markerList.get(position).getMarker().remove();
+                mRemoveMarkerPosition.onClick(position);
+            }
+        });
 
     }
 

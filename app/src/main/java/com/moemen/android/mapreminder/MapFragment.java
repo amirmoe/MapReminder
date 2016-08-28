@@ -56,7 +56,6 @@ public class MapFragment extends Fragment {
     private MapView mMapView;
     private Marker marker;
     private GoogleMap googleMap;
-    private TabSelector mTabSelector;
     private LocationManager locationManager;
     double longitudeGPS, latitudeGPS;
     private ArrayList<MarkerObj> markerList = new ArrayList<>();
@@ -72,14 +71,8 @@ public class MapFragment extends Fragment {
         this.comm = communicator;
     }
 
-
-    /**
-     * This method is called upon in the pagerAdapter to switch tab view after all 10 rounds
-     *
-     * @param tabSelector Initialize the tabSelector
-     */
-    public void setTabSelector(TabSelector tabSelector) {
-        mTabSelector = tabSelector;
+    public void removeMarker(int pos){
+        markerList.get(pos).getMarker().remove();
     }
 
     private final LocationListener locationListenerGPS = new LocationListener() {
@@ -174,7 +167,13 @@ public class MapFragment extends Fragment {
                         } catch (IOException e) {
                         e.printStackTrace();
                     }
-                        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+                        String address = "";
+                        try {
+                            address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+
+                        } catch (IndexOutOfBoundsException e){
+                            e.printStackTrace();
+                        }
 
 
                         if (address != null){

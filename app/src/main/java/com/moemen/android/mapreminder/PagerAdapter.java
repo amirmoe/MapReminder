@@ -14,7 +14,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     private int mNumOfTabs;
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
-    private TabSelector mTabSelector;
 
     /**
      * Initialize the PagerAdapter and also create new fragment-objects.
@@ -27,10 +26,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
         this.mNumOfTabs = NumOfTabs;
         this.mMapFragment = new MapFragment();
         this.mListFragment = new ListFragment();
-    }
-
-    public void setTabSelector(TabSelector tabSelector) {
-        mTabSelector = tabSelector;
     }
 
     /**
@@ -56,44 +51,24 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                         frag.sendArray(list);
                     }
                     @Override
-                    public void arrayToMap(ArrayList list) {}
-                });
-                /**
-                 * Callback used for fragment DiceFragment to change view to ScoreFragment
-                 */
-                tab1.setTabSelector(new TabSelector() {
-                    @Override
-                    public void onTabSwitch(int tabPosition) {
-                        mTabSelector.onTabSwitch(tabPosition);
-                    }
+                    public void positionToRemove(int i) {}
                 });
                 return tab1;
 
             case 1:
                 ListFragment tab2 = this.mListFragment;
-                /*tab2.setCommunicator(new Communicator() {
+                tab2.setCommunicator(new Communicator() {
                     @Override
-                    public void respond(String[] data) {}
+                    public void arrayToList(ArrayList list) {}
                     /**
                      * Callback used for fragment scoreFragment to communicate with
                      * fragment dicesFragment. Resets the score
                      */
-            /*
-                    @Override
-                    public void needRestart() {
-                        DiceFragment frag = (DiceFragment) getItem(0);
-                        frag.resetValues();
-                    }
-                });*/
-                /**
-                 * Callback used for fragment ScoreFragment to change view to DiceFragment
-                 */
 
-
-                tab2.setTabSelector(new TabSelector() {
                     @Override
-                    public void onTabSwitch(int tabPosition) {
-                        mTabSelector.onTabSwitch(tabPosition);
+                    public void positionToRemove(int i) {
+                        MapFragment frag = (MapFragment) getItem(0);
+                        frag.removeMarker(i);
                     }
                 });
                 return tab2;

@@ -1,6 +1,8 @@
 package com.moemen.android.mapreminder;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,21 +18,25 @@ import java.util.ArrayList;
 public class ListFragment extends Fragment {
 
     private static final String TAG = "FELSÖKNING";
-    private TabSelector mTabSelector;
 
+    private Communicator comm;
 
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
+
     /**
-     * This method is called upon in the pagerAdapter to switch tab view after all 10 rounds
+     * This method is called upon in the pagerAdapter to make it able for the fragments to communicate
+     * with each other
      *
-     * @param tabSelector Initialize the tabSelector
+     * @param communicator Initialize the communicator
      */
-    public void setTabSelector(TabSelector tabSelector) {
-        mTabSelector = tabSelector;
+    public void setCommunicator(Communicator communicator) {
+        this.comm = communicator;
     }
+
+
 
 
     @Override
@@ -52,6 +58,13 @@ public class ListFragment extends Fragment {
         mAdapter = new MyAdapter();
         mRecyclerView.setAdapter(mAdapter);
 
+        mAdapter.setRemoveMarkerPosition(new RemoveMarkerPosition() {
+            @Override
+            public void onClick(int pos) {
+                comm.positionToRemove(pos);
+                mAdapter.notifyDataSetChanged();
+            }
+        });
 
 
         return v;
@@ -59,6 +72,15 @@ public class ListFragment extends Fragment {
 
     public void sendArray(ArrayList list){
         mAdapter.set(list);
-        mAdapter.notifyDataSetChanged();
+        //mAdapter.notifyDataSetChanged();
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
+
     }
+
 }
