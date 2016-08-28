@@ -3,7 +3,6 @@ package com.moemen.android.mapreminder;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-
 import java.util.ArrayList;
 
 
@@ -14,7 +13,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     private int mNumOfTabs;
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
-
     /**
      * Initialize the PagerAdapter and also create new fragment-objects.
      *
@@ -27,7 +25,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
         this.mMapFragment = new MapFragment();
         this.mListFragment = new ListFragment();
     }
-
     /**
      * Takes the position of the view we want to change to and returns corresponding fragment
      *
@@ -41,9 +38,9 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                 MapFragment tab1 = this.mMapFragment  ;
                 tab1.setCommunicator(new Communicator() {
                     /**
-                     * Callback used for fragment dicesFragment to communicate with
-                     * fragment scoreFragment. Keeps updating the score
-                     * @param list update of the score in the score table.
+                     * Callback used for fragment MapFragment to communicate with
+                     * fragment ListFragment. Updates the arraylist with markers.
+                     * @param list update of the markers
                      */
                     @Override
                     public void arrayToList(ArrayList list) {
@@ -61,10 +58,10 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                     @Override
                     public void arrayToList(ArrayList list) {}
                     /**
-                     * Callback used for fragment scoreFragment to communicate with
-                     * fragment dicesFragment. Resets the score
+                     * Callback used for fragment ListFragment to communicate with
+                     * fragment MapFragment. Tells MapFragment which marker to remove
+                     * @param i position of marker to remove in the arraylist.
                      */
-
                     @Override
                     public void positionToRemove(int i) {
                         MapFragment frag = (MapFragment) getItem(0);
@@ -72,8 +69,6 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                     }
                 });
                 return tab2;
-
-
             default:
                 return null;
         }

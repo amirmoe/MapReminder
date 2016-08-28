@@ -3,7 +3,9 @@ package com.moemen.android.mapreminder;
 import java.util.ArrayList;
 
 /**
- * Created by amir on 2016-08-27.
+ *
+ * Interface to allow ListFragment and MapFragment to communicate with each other.
+ *
  */
 public interface Communicator {
     void arrayToList(ArrayList list);

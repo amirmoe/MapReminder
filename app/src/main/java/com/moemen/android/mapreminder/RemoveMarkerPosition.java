@@ -3,7 +3,7 @@ package com.moemen.android.mapreminder;
 import java.util.ArrayList;
 
 /**
- * Created by amir on 2016-08-28.
+ * Interface to allow MyAdapter to communicate with ListFragment.
  */
 public interface RemoveMarkerPosition {
     void onClick(int pos, ArrayList list);

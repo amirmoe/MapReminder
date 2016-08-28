@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,50 +12,36 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 import android.location.LocationListener;
-
-//import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * Created by amir on 2016-08-21.
+ * First view which main purpose is to show a map view
  */
 public class MapFragment extends Fragment {
 
     private static final String TAG = "FELSÖKNING";
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     public static final String KEY_NEXT = "com.moemen.android.mapreminder";
-
-
     private BroadcastReceiver receiver;
     private Communicator comm;
     private MapView mMapView;
@@ -68,7 +53,6 @@ public class MapFragment extends Fragment {
     private int notificationPosition;
     private ArrayList<MarkerObj> markerList = new ArrayList<>();
 
-
     /**
      * This method is called upon in the pagerAdapter to make it able for the fragments to communicate
      * with each other
@@ -79,20 +63,31 @@ public class MapFragment extends Fragment {
         this.comm = communicator;
     }
 
+    /**
+     * This method is called upon in the pagerAdapter when a marker is supposed to be removed from
+     * a button press in ListFragment
+     * @param pos position of the marker in the array list that is supposed to be removed.
+     */
     public void removeMarker(int pos){
         markerList.get(pos).getMarker().remove();
         markerList.remove(pos);
-        Log.d(TAG, "MapFragment: -" + Integer.toString(markerList.size()));
     }
 
+    /**
+     * Called upon from the Broadcaster when the user turns of the notification from the notification
+     * and not the app.
+     */
     public void notificationStop(){
         mNotificationManager.cancel(0);
         removeMarker(notificationPosition);
         comm.arrayToList(markerList);
-
-
     }
 
+    /**
+     * Called upon after marker has been added. Continuously checks if the coordinates of the users
+     * location are close to the coordinates of the marker. if so then it build a notification the
+     * alert the user.
+     */
     private final LocationListener locationListenerGPS = new LocationListener() {
         @Override
         public void onLocationChanged(Location location) {
@@ -143,9 +138,15 @@ public class MapFragment extends Fragment {
         }
     };
 
-
-
-
+    /**
+     * Initiate the map and mapView.
+     * Also initiates a BroadCaster to listen for the notification.
+     *
+     * @param inflater inflates xml to give a view
+     * @param parent Fragments parent ViewGroup
+     * @param savedInstanceState Prior state bundle
+     * @return view of fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map, parent, false);
@@ -160,12 +161,8 @@ public class MapFragment extends Fragment {
             e.printStackTrace();
         }
 
-
-
-
         IntentFilter filter = new IntentFilter();
         filter.addAction(KEY_NEXT);
-
         receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -176,15 +173,15 @@ public class MapFragment extends Fragment {
         };
         getActivity().registerReceiver(receiver, filter);
 
-
-
-
         mMapView.getMapAsync(new OnMapReadyCallback() {
+            /**
+             * When API has connected, enable user location and then start a listener.
+             *
+             * @param mMap
+             */
             @Override
             public void onMapReady(GoogleMap mMap) {
                 googleMap = mMap;
-
-                //showAlert();
 
                 // For showing a move to my location button
                 googleMap.setMyLocationEnabled(true);
@@ -192,6 +189,12 @@ public class MapFragment extends Fragment {
                 // Set a listener for marker click.
                 googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
 
+                    /**
+                     * When clicking on the map, create a marker that also tries to set the address
+                     * of the location as a MarkerMessage. When Marker created, add it to the
+                     * arraylist and start the Location listener.
+                     * @param point
+                     */
                     @Override
                     public void onMapClick(LatLng point) {
                         MarkerOptions options = new MarkerOptions()
@@ -216,7 +219,6 @@ public class MapFragment extends Fragment {
                             e.printStackTrace();
                         }
 
-
                         if (address != null){
                             marker.setTitle(address);
                         }
@@ -225,11 +227,7 @@ public class MapFragment extends Fragment {
                         tempMarker.setMarker(marker);
                         tempMarker.setMarkerMessage(marker.getTitle());
                         markerList.add(tempMarker);
-
-                        Log.d(TAG, "MapFragment: +" + Integer.toString(markerList.size()));
                         comm.arrayToList(markerList);
-
-
 
                         if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
                             ActivityCompat.requestPermissions( getActivity(), new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },
@@ -237,7 +235,7 @@ public class MapFragment extends Fragment {
                         }
                         locationManager = (LocationManager)getActivity().getSystemService(Context.LOCATION_SERVICE);
                         locationManager.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER, 1000, 0, locationListenerGPS); // 2*60*1000, 10
+                                LocationManager.GPS_PROVIDER, 2*60*1000, 10, locationListenerGPS); // every minute
                     }
                 });
             }

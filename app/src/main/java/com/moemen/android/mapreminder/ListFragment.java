@@ -1,8 +1,6 @@
 package com.moemen.android.mapreminder;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,18 +12,15 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 
 /**
- * Created by amir on 2016-08-21.
+ * Second view which main purpose is to show a list of all the markers.
  */
 public class ListFragment extends Fragment {
 
     private static final String TAG = "FELSÖKNING";
-
     private Communicator comm;
-
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
-
 
     /**
      * This method is called upon in the pagerAdapter to make it able for the fragments to communicate
@@ -37,9 +32,25 @@ public class ListFragment extends Fragment {
         this.comm = communicator;
     }
 
+    /**
+     * This method is called upon in the pagerAdapter when the elements of the array list with
+     * markers has been changed.
+     * @param list arraylist with all the markers.
+     */
+    public void sendArray(ArrayList list){
+        mAdapter.set(list);
+        mAdapter.notifyDataSetChanged();
+    }
 
 
-
+    /**
+     * Initiate the recyclerView
+     *
+     * @param inflater inflates xml to give a view
+     * @param parent Fragments parent ViewGroup
+     * @param savedInstanceState Prior state bundle
+     * @return view of fragment
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list, parent, false);
@@ -60,14 +71,16 @@ public class ListFragment extends Fragment {
         mRecyclerView.setAdapter(mAdapter);
 
         mAdapter.setRemoveMarkerPosition(new RemoveMarkerPosition() {
+            /**
+             * called upon from myAdapter when the Remove button has been pressed. updates the list
+             * and recyclerView.
+             *
+             * @param pos position of item to remove
+             * @param list the Arraylist of markers.
+             */
             @Override
             public void onClick(int pos, ArrayList list) {
                 comm.positionToRemove(pos);
-                Log.d(TAG, "ListFragment: -" + Integer.toString(list.size()));
-
-
-                Log.d(TAG, "Pos jag ska tabort" + Integer.toString(pos));
-                //list.remove(pos);
                 mRecyclerView.removeViewAt(pos);
                 mAdapter.notifyItemRemoved(pos);
                 mAdapter.notifyItemRangeChanged(pos, list.size());
@@ -79,13 +92,6 @@ public class ListFragment extends Fragment {
         return v;
     }
 
-    public void sendArray(ArrayList list){
-        mAdapter.set(list);
-        mAdapter.notifyDataSetChanged();
-        Log.d(TAG, "ListFragment: +" + Integer.toString(list.size()));
 
-
-
-    }
 
 }
