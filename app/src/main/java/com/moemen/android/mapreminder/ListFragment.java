@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,8 +61,15 @@ public class ListFragment extends Fragment {
 
         mAdapter.setRemoveMarkerPosition(new RemoveMarkerPosition() {
             @Override
-            public void onClick(int pos) {
+            public void onClick(int pos, ArrayList list) {
                 comm.positionToRemove(pos);
+                
+                list.remove(pos);
+                mRecyclerView.removeViewAt(pos);
+                mAdapter.notifyItemRemoved(pos);
+                mAdapter.notifyItemRangeChanged(pos, list.size());
+
+
                 mAdapter.notifyDataSetChanged();
             }
         });
@@ -72,13 +80,13 @@ public class ListFragment extends Fragment {
 
     public void sendArray(ArrayList list){
         mAdapter.set(list);
-        //mAdapter.notifyDataSetChanged();
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
+        mAdapter.notifyDataSetChanged();
+        /*new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
                 mAdapter.notifyDataSetChanged();
             }
-        });
+        });*/
 
 
     }

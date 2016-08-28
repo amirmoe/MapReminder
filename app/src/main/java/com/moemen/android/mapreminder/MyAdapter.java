@@ -73,7 +73,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             @Override
             public void onClick(View view) {
                 markerList.get(position).getMarker().remove();
-                mRemoveMarkerPosition.onClick(position);
+                mRemoveMarkerPosition.onClick(position, markerList);
             }
         });
 
