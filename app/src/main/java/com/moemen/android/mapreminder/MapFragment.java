@@ -220,7 +220,11 @@ public class MapFragment extends Fragment {
                         }
 
                         if (address != null){
-                            marker.setTitle(address);
+                            if (address.length()==0){
+                                marker.setTitle("Unknown");
+                            } else {
+                                marker.setTitle(address);
+                            }
                         }
 
                         MarkerObj tempMarker = new MarkerObj();

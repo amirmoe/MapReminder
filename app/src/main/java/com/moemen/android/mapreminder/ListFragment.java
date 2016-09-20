@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -21,6 +22,7 @@ public class ListFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private TextView emptyText;
 
     /**
      * This method is called upon in the pagerAdapter to make it able for the fragments to communicate
@@ -38,6 +40,9 @@ public class ListFragment extends Fragment {
      * @param list arraylist with all the markers.
      */
     public void sendArray(ArrayList list){
+        if (list.size()!=0){
+            emptyText.setVisibility(View.INVISIBLE);
+        }
         mAdapter.set(list);
         mAdapter.notifyDataSetChanged();
     }
@@ -56,6 +61,9 @@ public class ListFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_list, parent, false);
 
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
+
+        emptyText = (TextView) v.findViewById(R.id.emptyText);
+
 
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
@@ -85,6 +93,10 @@ public class ListFragment extends Fragment {
                 mAdapter.notifyItemRemoved(pos);
                 mAdapter.notifyItemRangeChanged(pos, list.size());
                 mAdapter.notifyDataSetChanged();
+
+                if (list.size()==0){
+                    emptyText.setVisibility(View.VISIBLE);
+                }
             }
         });
 
