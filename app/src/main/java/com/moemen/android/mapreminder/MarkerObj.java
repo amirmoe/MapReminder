@@ -7,7 +7,7 @@ import com.google.android.gms.maps.model.Marker;
  * Represents a marker on the Map. A Marker has built in attributes built from MarkerOptions
  * before becoming an object.
  */
-public class MarkerObj {
+class MarkerObj {
 
     private Marker mMarker;
     private String markerMessage;
@@ -16,7 +16,7 @@ public class MarkerObj {
      * Change the marker value of the object
      * @param marker marker value.
      */
-    public void setMarker(Marker marker){
+    void setMarker(Marker marker){
         this.mMarker = marker;
     }
 
@@ -24,7 +24,7 @@ public class MarkerObj {
      * Gets the marker value
      * @return marker value
      */
-    public Marker getMarker(){
+    Marker getMarker(){
         return mMarker;
     }
 
@@ -32,7 +32,7 @@ public class MarkerObj {
      * Gets the current MarkerMessage
      * @return marker message
      */
-    public String getMarkerMessage() {
+    String getMarkerMessage() {
         return markerMessage;
     }
 
@@ -40,7 +40,7 @@ public class MarkerObj {
      * Changes the MarkerMessage
      * @param markerMessage message of the marker.
      */
-    public void setMarkerMessage(String markerMessage) {
+    void setMarkerMessage(String markerMessage) {
         this.markerMessage = markerMessage;
     }
 }

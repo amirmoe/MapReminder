@@ -18,6 +18,12 @@
         />
 
     <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:text="@string/messageButton"
+        android:id="@+id/messageButton"/>
+    <Button
         android:id="@+id/remove_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

@@ -17,7 +17,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,17 +38,14 @@ import java.util.Locale;
  */
 public class MapFragment extends Fragment {
 
-    private static final String TAG = "FELSÖKNING";
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     public static final String KEY_NEXT = "com.moemen.android.mapreminder";
-    private BroadcastReceiver receiver;
-    private Communicator comm;
-    private MapView mMapView;
+    private Communicator mCommunicator;
     private Marker marker;
     private GoogleMap googleMap;
     private LocationManager locationManager;
     private NotificationManager mNotificationManager;
-    double longitudeGPS, latitudeGPS;
+    private double longitudeGPS, latitudeGPS;
     private int notificationPosition;
     private ArrayList<MarkerObj> markerList = new ArrayList<>();
 
@@ -60,17 +56,30 @@ public class MapFragment extends Fragment {
      * @param communicator Initialize the communicator
      */
     public void setCommunicator(Communicator communicator) {
-        this.comm = communicator;
+        this.mCommunicator = communicator;
     }
 
     /**
      * This method is called upon in the pagerAdapter when a marker is supposed to be removed from
      * a button press in ListFragment
-     * @param pos position of the marker in the array list that is supposed to be removed.
+     * @param position position of the marker in the array list that is supposed to be removed.
      */
-    public void removeMarker(int pos){
-        markerList.get(pos).getMarker().remove();
-        markerList.remove(pos);
+    public void removeMarker(int position){
+        markerList.get(position).getMarker().remove();
+        markerList.remove(position);
+    }
+
+    /**
+     * This method is called upon in the pagerAdapter when a marker is supposed to change its
+     * marker message.
+     *
+     * @param position position of the marker in the array list who's marker message is going to be
+     *                 changed
+     * @param message the new marker message.
+     */
+    public void addMessage(int position, String message){
+        markerList.get(position).setMarkerMessage(message);
+        mCommunicator.arrayToList(markerList);
     }
 
     /**
@@ -80,7 +89,7 @@ public class MapFragment extends Fragment {
     public void notificationStop(){
         mNotificationManager.cancel(0);
         removeMarker(notificationPosition);
-        comm.arrayToList(markerList);
+        mCommunicator.arrayToList(markerList);
     }
 
     /**
@@ -100,11 +109,9 @@ public class MapFragment extends Fragment {
 
                     Intent nextIntent = new Intent(KEY_NEXT);
                     PendingIntent actionPendingIntent = PendingIntent.getBroadcast(getActivity(), 0, nextIntent, 0);
-
                     NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(getActivity());
                     mBuilder.setSmallIcon(R.drawable.notification_icon);
                     mBuilder.setContentTitle("MapReminder!");
-                    //mBuilder.setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 });
                     mBuilder.addAction(R.drawable.ic_close, "Turn off", actionPendingIntent);
                     mNotificationManager = (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -150,7 +157,7 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_map, parent, false);
-        mMapView = (MapView) v.findViewById(R.id.mapView);
+        MapView mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
 
         mMapView.onResume(); // needed to get the map to display immediately
@@ -163,7 +170,7 @@ public class MapFragment extends Fragment {
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(KEY_NEXT);
-        receiver = new BroadcastReceiver() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(KEY_NEXT)) {
@@ -192,7 +199,7 @@ public class MapFragment extends Fragment {
                     /**
                      * When clicking on the map, create a marker that also tries to set the address
                      * of the location as a MarkerMessage. When Marker created, add it to the
-                     * arraylist and start the Location listener.
+                     * arrayList and start the Location listener.
                      * @param point
                      */
                     @Override
@@ -231,7 +238,7 @@ public class MapFragment extends Fragment {
                         tempMarker.setMarker(marker);
                         tempMarker.setMarkerMessage(marker.getTitle());
                         markerList.add(tempMarker);
-                        comm.arrayToList(markerList);
+                        mCommunicator.arrayToList(markerList);
 
                         if ( ContextCompat.checkSelfPermission( getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
                             ActivityCompat.requestPermissions( getActivity(), new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  },

@@ -15,9 +15,6 @@ import android.support.v7.widget.Toolbar;
  *
  */
 public class MainActivity extends AppCompatActivity {
-
-    private static final String TAG = "FELSÖKNING";
-
     /**
      *  Initializes the toolbar, tabLayout and Viewpager.
      * @param savedInstanceState Prior state bundle

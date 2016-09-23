@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * Adapter to populate pages inside our ViewPager
  */
-public class PagerAdapter extends FragmentStatePagerAdapter {
+class PagerAdapter extends FragmentStatePagerAdapter {
     private int mNumOfTabs;
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -19,7 +19,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
      * @param fm fragmentManager to keep track of fragments
      * @param NumOfTabs number of tabs/views.
      */
-    public PagerAdapter(FragmentManager fm, int NumOfTabs) {
+    PagerAdapter(FragmentManager fm, int NumOfTabs) {
         super(fm);
         this.mNumOfTabs = NumOfTabs;
         this.mMapFragment = new MapFragment();
@@ -39,7 +39,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                 tab1.setCommunicator(new Communicator() {
                     /**
                      * Callback used for fragment MapFragment to communicate with
-                     * fragment ListFragment. Updates the arraylist with markers.
+                     * fragment ListFragment. Updates the arrayList with markers.
                      * @param list update of the markers
                      */
                     @Override
@@ -49,6 +49,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                     }
                     @Override
                     public void positionToRemove(int i) {}
+                    public void positionToAddMessage(int i, String s){}
                 });
                 return tab1;
 
@@ -60,12 +61,23 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
                     /**
                      * Callback used for fragment ListFragment to communicate with
                      * fragment MapFragment. Tells MapFragment which marker to remove
-                     * @param i position of marker to remove in the arraylist.
+                     * @param i position of marker to remove in the arrayList.
                      */
                     @Override
                     public void positionToRemove(int i) {
                         MapFragment frag = (MapFragment) getItem(0);
                         frag.removeMarker(i);
+                    }
+                    /**
+                     * Callback used for fragment ListFragment to communicate with
+                     * fragment MapFragment. Tells MapFragment which marker needs a new
+                     * marker message
+                     * @param position position of marker to remove in the arrayList.
+                     * @param message new marker message
+                     */
+                    public void positionToAddMessage(int position, String message){
+                        MapFragment frag = (MapFragment) getItem(0);
+                        frag.addMessage(position,message);
                     }
                 });
                 return tab2;

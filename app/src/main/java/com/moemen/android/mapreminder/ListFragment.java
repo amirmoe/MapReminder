@@ -4,12 +4,10 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import java.util.ArrayList;
 
 /**
@@ -17,11 +15,9 @@ import java.util.ArrayList;
  */
 public class ListFragment extends Fragment {
 
-    private static final String TAG = "FELSÖKNING";
-    private Communicator comm;
+    private Communicator mCommunicator;
     private RecyclerView mRecyclerView;
     private MyAdapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
     private TextView emptyText;
 
     /**
@@ -31,13 +27,13 @@ public class ListFragment extends Fragment {
      * @param communicator Initialize the communicator
      */
     public void setCommunicator(Communicator communicator) {
-        this.comm = communicator;
+        this.mCommunicator = communicator;
     }
 
     /**
-     * This method is called upon in the pagerAdapter when the elements of the array list with
+     * This method is called upon in the pagerAdapter when the elements of the arrayList with
      * markers has been changed.
-     * @param list arraylist with all the markers.
+     * @param list arrayList with all the markers.
      */
     public void sendArray(ArrayList list){
         if (list.size()!=0){
@@ -61,42 +57,43 @@ public class ListFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_list, parent, false);
 
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recycler_view);
-
         emptyText = (TextView) v.findViewById(R.id.emptyText);
 
-
-        // use this setting to improve performance if you know that changes
-        // in content do not change the layout size of the RecyclerView
         mRecyclerView.setHasFixedSize(true);
-
-        // use a linear layout manager
-        mLayoutManager = new LinearLayoutManager(getActivity());
+        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-
-        // specify an adapter (see also next example)
         mAdapter = new MyAdapter();
         mRecyclerView.setAdapter(mAdapter);
-
-        mAdapter.setRemoveMarkerPosition(new RemoveMarkerPosition() {
+        mAdapter.setListFragmentCommunication(new ListFragmentCommunication() {
             /**
              * called upon from myAdapter when the Remove button has been pressed. updates the list
              * and recyclerView.
              *
-             * @param pos position of item to remove
-             * @param list the Arraylist of markers.
+             * @param position position of item to remove
+             * @param list the arrayList of markers.
              */
             @Override
-            public void onClick(int pos, ArrayList list) {
-                comm.positionToRemove(pos);
-                mRecyclerView.removeViewAt(pos);
-                mAdapter.notifyItemRemoved(pos);
-                mAdapter.notifyItemRangeChanged(pos, list.size());
+            public void removeMarkerPosition(int position, ArrayList list) {
+                mCommunicator.positionToRemove(position);
+                mRecyclerView.removeViewAt(position);
+                mAdapter.notifyItemRemoved(position);
+                mAdapter.notifyItemRangeChanged(position, list.size());
                 mAdapter.notifyDataSetChanged();
 
                 if (list.size()==0){
                     emptyText.setVisibility(View.VISIBLE);
                 }
+            }
+
+            /**
+             * called upon from myAdapter when the change message button has been pressed.
+             * Tells the MapFragment which marker message needs to be changed.
+             * @param position position of item to change message.
+             * @param message the new marker message.
+             */
+            @Override
+            public void addMessageMarkerPosition(int position, String message) {
+                mCommunicator.positionToAddMessage(position, message);
             }
         });
 
